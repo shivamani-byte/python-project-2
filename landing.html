@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bunny Budget | Know where your money goes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fffafc;
+            --lavender: #eee8ff;
+            --purple: #9277ce;
+            --purple-dark: #6b4fa8;
+            --pink: #f6a6c1;
+            --cream: #fff7e9;
+            --mint: #e7f8f1;
+            --text: #40364d;
+            --muted: #6f6280;
+            --line: #eadff2;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Nunito", "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        a { color: inherit; }
+        :focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; border-radius: 6px; }
+        .wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+
+        /* Top bar */
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 1.2rem; text-decoration: none; color: var(--purple-dark); }
+        .brand img { width: 38px; height: 38px; object-fit: contain; }
+        .btn {
+            display: inline-block; padding: 13px 26px; border-radius: 999px; font-weight: 800;
+            text-decoration: none; background: var(--purple); color: #fff; border: 2px solid var(--purple);
+            transition: background .2s, transform .2s;
+        }
+        .btn:hover { background: var(--purple-dark); border-color: var(--purple-dark); }
+        .btn:active { transform: scale(.97); }
+        .btn.ghost { background: transparent; color: var(--purple-dark); border-color: var(--line); }
+        .btn.ghost:hover { background: var(--lavender); border-color: var(--lavender); }
+        .btn.small { padding: 9px 20px; }
+
+        /* Hero */
+        .hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; padding: 56px 0 88px; }
+        .hero h1 { font-size: clamp(2.3rem, 5.2vw, 3.9rem); line-height: 1.08; font-weight: 900; letter-spacing: -.02em; max-width: 14ch; }
+        .hero p.lead { margin-top: 20px; font-size: 1.15rem; color: var(--muted); max-width: 46ch; }
+        .hero .actions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 14px; }
+        .hero-copy { animation: rise .7s ease both; }
+        @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+        /* Sample month card */
+        .sample { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 28px; padding: 64px 28px 28px; box-shadow: 0 24px 50px rgba(146, 119, 206, .16); }
+        .sample .bunny { position: absolute; top: -70px; right: 28px; width: 130px; }
+        .sample h2 { font-size: 1.05rem; font-weight: 800; }
+        .sample .sub { color: var(--muted); font-size: .92rem; }
+        .sample .left { margin-top: 18px; font-size: 2.4rem; font-weight: 900; color: var(--purple-dark); line-height: 1.1; }
+        .sample .left small { display: block; font-size: .9rem; font-weight: 600; color: var(--muted); }
+        .bar { margin-top: 18px; height: 12px; border-radius: 999px; background: var(--lavender); overflow: hidden; }
+        .bar span { display: block; width: 27.4%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--purple), var(--pink)); }
+        .split { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--line); }
+        .split div { display: flex; justify-content: space-between; font-weight: 600; padding: 5px 0; }
+        .split i { font-style: normal; color: var(--muted); font-weight: 400; }
+
+        /* Features */
+        .features { padding: 40px 0 80px; }
+        .section-title { font-size: clamp(1.7rem, 3.4vw, 2.3rem); font-weight: 900; letter-spacing: -.01em; max-width: 22ch; }
+        .rows { margin-top: 28px; border-top: 1px solid var(--line); }
+        .row { display: grid; grid-template-columns: 260px 1fr; gap: 24px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+        .row h3 { font-size: 1.25rem; font-weight: 800; }
+        .row p { color: var(--muted); max-width: 60ch; }
+
+        /* How it works */
+        .how { background: var(--lavender); padding: 72px 0; }
+        .steps { margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; list-style: none; counter-reset: s; }
+        .steps li { counter-increment: s; }
+        .steps li::before {
+            content: counter(s); display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+            background: var(--purple); color: #fff; font-weight: 900; margin-bottom: 14px;
+        }
+        .steps h3 { font-size: 1.2rem; font-weight: 800; }
+        .steps p { color: var(--muted); margin-top: 4px; }
+
+        /* Closing */
+        .closing { text-align: center; padding: 80px 0 88px; }
+        .closing h2 { font-size: clamp(1.8rem, 3.6vw, 2.5rem); font-weight: 900; max-width: 20ch; margin: 0 auto; }
+        .closing p { color: var(--muted); margin: 12px 0 28px; }
+        footer { border-top: 1px solid var(--line); padding: 22px 0; color: var(--muted); font-size: .92rem; text-align: center; }
+
+        @media (max-width: 820px) {
+            .hero { grid-template-columns: 1fr; padding-top: 32px; gap: 90px; }
+            .row { grid-template-columns: 1fr; gap: 6px; }
+            .steps { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .hero-copy { animation: none; }
+            .btn { transition: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="topbar">
+            <a class="brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='rabbit.png') }}" alt="">
+                Bunny Budget
+            </a>
+            <a class="btn small" href="{{ url_for('app_page') }}">Open the website</a>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-copy">
+                    <h1>Know where your money goes before the month ends.</h1>
+                    <p class="lead">Bunny Budget is a simple expense tracker. Write down what you spend, see it in clear charts, and set a monthly limit so you stay in control.</p>
+                    <div class="actions">
+                        <a class="btn" href="{{ url_for('app_page') }}">Start tracking</a>
+                        <a class="btn ghost" href="#how">See how it works</a>
+                    </div>
+                </div>
+
+                <aside class="sample" aria-label="Sample month preview">
+                    <img class="bunny" src="{{ url_for('static', filename='rabbit.png') }}" alt="Bunny Budget mascot">
+                    <h2>Monthly budget</h2>
+                    <p class="sub">Sample month</p>
+                    <p class="left">₹10,895<small>left to spend</small></p>
+                    <div class="bar" role="img" aria-label="27.4 percent of the budget used"><span></span></div>
+                    <div class="split">
+                        <div><i>Budget</i> ₹15,000</div>
+                        <div><i>Spent</i> ₹4,105</div>
+                        <div><i>Used</i> 27.4%</div>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="features" id="features">
+                <h2 class="section-title">Everything you need to understand your spending</h2>
+                <div class="rows">
+                    <div class="row">
+                        <h3>Record in seconds</h3>
+                        <p>Add what you bought, the amount, the category and the date. Notes are optional.</p>
+                    </div>
+                    <div class="row">
+                        <h3>Find any expense</h3>
+                        <p>Search by word, pick a category, or set a date range. The list updates as you type.</p>
+                    </div>
+                    <div class="row">
+                        <h3>See where it goes</h3>
+                        <p>A pie chart, a six-month bar chart and a category report show which spending takes the biggest share.</p>
+                    </div>
+                    <div class="row">
+                        <h3>Stay within a limit</h3>
+                        <p>Set a budget for each month and watch how much is spent and how much is left.</p>
+                    </div>
+                    <div class="row">
+                        <h3>Take your data with you</h3>
+                        <p>Download every expense as a CSV file and open it in Excel.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <section class="how" id="how">
+        <div class="wrap">
+            <h2 class="section-title">How it works</h2>
+            <ol class="steps">
+                <li>
+                    <h3>Add an expense</h3>
+                    <p>Fill in a short form each time you spend.</p>
+                </li>
+                <li>
+                    <h3>Review your month</h3>
+                    <p>Check totals, the daily average and the charts on your dashboard.</p>
+                </li>
+                <li>
+                    <h3>Adjust your habits</h3>
+                    <p>Compare with your budget and cut back where it counts.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <div class="wrap">
+        <section class="closing">
+            <h2>Ready to see where your money goes?</h2>
+            <p>Your first expense takes less than a minute.</p>
+            <a class="btn" href="{{ url_for('app_page') }}">Open Bunny Budget</a>
+        </section>
+    </div>
+
+    <footer>Bunny Budget, a personal expense tracking and analysis platform.</footer>
+</body>
+</html>

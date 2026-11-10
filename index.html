@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bunny Budget | Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Chart.js creates the pie chart and bar graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <a href="#dashboard" class="brand">
+            <span class="brand-icon">🐰</span>
+            <span>Bunny Budget</span>
+        </a>
+
+        <p class="menu-label">WORKSPACE</p>
+
+        <nav class="navigation">
+            <a href="#dashboard" class="nav-link active">⌂ Dashboard</a>
+            <a href="#add-expense" class="nav-link">＋ Add Expense</a>
+            <a href="#transactions" class="nav-link">▤ Transactions</a>
+            <a href="#analytics" class="nav-link">◔ Analytics & Reports</a>
+            <a href="#budget" class="nav-link">♡ Monthly Budget</a>
+        </nav>
+
+        <div class="sidebar-note">
+            <div class="tiny-bunny">🐰</div>
+            <strong>Little savings, big dreams!</strong>
+            <p>Every rupee you track brings you closer to your goals.</p>
+        </div>
+
+        <p class="sidebar-footer">Bunny Budget · Personal Finance</p>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="greeting">YOUR PERSONAL FINANCE SPACE</p>
+                <h1 id="welcome-title">My Dashboard <span>♡</span></h1>
+                <p class="subheading">Understand your spending. Build better habits.</p>
+            </div>
+
+            <div class="profile">
+                <span class="profile-icon">🐰</span>
+                <div>
+                    <strong>Hello, {{ current_user.name if current_user else 'Friend' }}!</strong>
+<p><a href="{{ url_for('logout') }}" style="color:inherit">Log out</a></p>
+                </div>
+            </div>
+        </header>
+
+<!-- DATE RANGE -->
+        <section class="toolbar">
+            <div>
+                <label for="report-month">View month</label>
+                <input type="month" id="report-month">
+            </div>
+            <button type="button" class="secondary-button" id="export-csv">
+                ↓ Export CSV
+            </button>
+        </section>
+
+        <!-- SLIDES: the sidebar links move between these (see static/script.js) -->
+        <div class="slides-viewport">
+            <div class="slides-track">
+
+                <div class="app-slide" data-slide="dashboard">
+                    <!-- WELCOME BANNER -->
+                            <section class="welcome-banner">
+                                <div class="welcome-text">
+                                    <span class="pill">YOUR MONEY, YOUR RULES</span>
+                                    <h2>Personal Expense Tracking <br> Analysis Platform</h2>
+                                    <p>Keep track of your daily expenses and see where your money goes.</p>
+                                    <a href="#add-expense" class="welcome-button">Record an expense →</a>
+                                </div>
+
+                                <div class="rabbit-area">
+                                    <span class="sparkle sparkle-one">✦</span>
+                                    <img src="{{ url_for('static', filename='rabbit.png') }}"
+                                         alt="Cute bunny saving buddy"
+                                         class="rabbit-image">
+                                    <span class="sparkle sparkle-two">♡</span>
+                                    <p class="rabbit-caption">Your little saving buddy</p>
+                                </div>
+                            </section>
+
+        
+
+                    <!-- SUMMARY CARDS -->
+                            <section class="summary-grid">
+                                <article class="summary-card card-lavender">
+                                    <div class="card-top"><span>Total spent this month</span><span>◉</span></div>
+                                    <h2 id="monthly-total">₹0.00</h2>
+                                    <p>Expenses in selected month</p>
+                                </article>
+
+                                <article class="summary-card card-pink">
+                                    <div class="card-top"><span>All-time spending</span><span>↗</span></div>
+                                    <h2 id="all-time-total">₹0.00</h2>
+                                    <p>All recorded expenses</p>
+                                </article>
+
+                                <article class="summary-card card-cream">
+                                    <div class="card-top"><span>Transactions this month</span><span>▤</span></div>
+                                    <h2 id="monthly-count">0</h2>
+                                    <p>Recorded transactions</p>
+                                </article>
+
+                                <article class="summary-card card-mint">
+                                    <div class="card-top"><span>Daily average</span><span>◷</span></div>
+                                    <h2 id="daily-average">₹0.00</h2>
+                                    <p>Average per calendar day so far</p>
+                                </article>
+                            </section>
+
+        
+                </div>
+
+                <div class="app-slide" data-slide="add-expense">
+                    <!-- ADD / EDIT EXPENSE -->
+                            <section class="content-panel">
+                                <div class="section-heading">
+                                    <div>
+                                        <h2 id="form-heading">Add a new expense</h2>
+                                        <p>Record the details to keep your reports accurate.</p>
+                                    </div>
+                                    <span class="heading-decoration">✿</span>
+                                </div>
+
+                                <form id="expense-form">
+                                    <input type="hidden" id="expense-id">
+
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="description">Expense description</label>
+                                            <input type="text" id="description" maxlength="100"
+                                                   placeholder="e.g. Lunch, bus ticket, books" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="amount">Amount (₹)</label>
+                                            <input type="number" id="amount" min="0.01"
+                                                   step="0.01" placeholder="e.g. 150" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="category">Category</label>
+                                            <select id="category" required>
+                                                <option value="">Choose category</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="date">Expense date</label>
+                                            <input type="date" id="date" required>
+                                        </div>
+
+                                        <div class="form-group full-width">
+                                            <label for="notes">Notes (optional)</label>
+                                            <input type="text" id="notes" maxlength="250"
+                                                   placeholder="Add a note about this expense">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="primary-button" id="save-expense">
+                                            + Add expense
+                                        </button>
+                                        <button type="button" class="secondary-button hidden"
+                                                id="cancel-edit">Cancel edit</button>
+                                    </div>
+                                    <p id="form-message" class="helper-text" aria-live="polite"></p>
+                                </form>
+                            </section>
+
+        
+                </div>
+
+                <div class="app-slide" data-slide="transactions">
+                    <!-- TRANSACTION HISTORY -->
+                            <section class="content-panel">
+                                <div class="section-heading">
+                                    <div>
+                                        <h2>Transaction history</h2>
+                                        <p>Search, filter, edit, or delete your records.</p>
+                                    </div>
+                                </div>
+
+                                <div class="filters-grid">
+                                    <div class="form-group">
+                                        <label for="search-expense">Search description or notes</label>
+                                        <input type="search" id="search-expense"
+                                               placeholder="Search expenses...">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="filter-category">Category</label>
+                                        <select id="filter-category">
+                                            <option value="">All categories</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="filter-from">From date</label>
+                                        <input type="date" id="filter-from">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="filter-to">To date</label>
+                                        <input type="date" id="filter-to">
+                                    </div>
+                                </div>
+
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Category</th>
+                                                <th>Amount</th>
+                                                <th>Notes</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="expense-list"></tbody>
+                                    </table>
+                                </div>
+
+                                <p id="transaction-empty" class="empty-state hidden">
+                                    No expenses match your filters.
+                                </p>
+                            </section>
+
+        
+                </div>
+
+                <div class="app-slide" data-slide="analytics">
+                    <!-- ANALYTICS -->
+                            <section>
+                                <div class="section-heading analytics-heading">
+                                    <div>
+                                        <h2>Spending analytics</h2>
+                                        <p>Charts update automatically when expenses change.</p>
+                                    </div>
+                                </div>
+
+                                <div class="charts-grid">
+                                    <article class="chart-panel">
+                                        <div class="chart-heading">
+                                            <div>
+                                                <h3>Spending by category</h3>
+                                                <p>Selected month's expenses</p>
+                                            </div>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="category-chart"
+                                                    role="img"
+                                                    aria-label="Pie chart of expenses by category"></canvas>
+                                        </div>
+                                        <p id="pie-empty" class="chart-empty hidden">
+                                            Add expenses to see your category breakdown.
+                                        </p>
+                                    </article>
+
+                                    <article class="chart-panel">
+                                        <div class="chart-heading">
+                                            <div>
+                                                <h3>Monthly spending trend</h3>
+                                                <p>Last six months</p>
+                                            </div>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="monthly-chart"
+                                                    role="img"
+                                                    aria-label="Bar chart of monthly spending"></canvas>
+                                        </div>
+                                        <p id="bar-empty" class="chart-empty hidden">
+                                            Add expenses to see your spending trend.
+                                        </p>
+                                    </article>
+                                </div>
+
+                                <div class="content-panel category-report">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>Category report</h2>
+                                            <p>How much each category contributes to your spending.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="table-wrapper">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Category</th>
+                                                    <th>Total spent</th>
+                                                    <th>Share of spending</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="category-report-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </section>
+
+        
+                </div>
+
+                <div class="app-slide" data-slide="budget">
+                    <!-- BUDGET -->
+                            <section class="content-panel">
+                                <div class="section-heading">
+                                    <div>
+                                        <h2>My monthly budget</h2>
+                                        <p>Set a spending limit for the selected month.</p>
+                                    </div>
+                                    <span class="heading-decoration">♡</span>
+                                </div>
+
+                                <form id="budget-form" class="budget-form">
+                                    <div class="form-group">
+                                        <label for="budget-amount">Monthly budget (₹)</label>
+                                        <input type="number" id="budget-amount"
+                                               min="0" step="0.01" placeholder="e.g. 10000" required>
+                                    </div>
+                                    <button type="submit" class="primary-button">Save budget</button>
+                                </form>
+
+                                <div class="budget-details">
+                                    <div><span>Budget</span><strong id="budget-total">₹0.00</strong></div>
+                                    <div><span>Spent</span><strong id="budget-spent">₹0.00</strong></div>
+                                    <div><span>Remaining</span><strong id="budget-remaining">₹0.00</strong></div>
+                                </div>
+
+                                <div class="progress-track">
+                                    <div class="progress-fill" id="budget-progress"></div>
+                                </div>
+                                <p id="budget-message" class="helper-text" aria-live="polite">
+                                    Set a budget to start tracking your progress.
+                                </p>
+                            </section>
+
+        
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="footer">
+            Made with ♡ and a little bunny magic.
+            <p>Your expenses are saved in your MySQL database.</p>
+        </footer>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
